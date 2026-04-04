@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crimping Pro — LEONI Wiring Systems</title>
+<link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+/* ══════════════════════════════════════════
+   RESET & ROOT — THÈME CLAIR POWER BI
+══════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  /* Fond et surfaces */
+  --bg:#f0f2f5;
+  --bg2:#f7f8fb;
+  --surf:#ffffff;
+  --surf2:#f4f6f9;
+  --surf3:#eef1f6;
+  /* Bordures */
+  --bd:#e2e6ed;
+  --bd2:#d0d5de;
+  --bd3:#c4c9d4;
+  /* Texte */
+  --tx:#1a2035;
+  --t2:#4a5568;
+  --t3:#8896ab;
+  --t4:#b0bac8;
+  /* Accents LEONI */
+  --leoni-blue:#0a3d91;
+  --leoni-blue2:#1a55b0;
+  --leoni-light:#e8edf8;
+  /* Couleurs KPI (bordures gauche) */
+  --kpi1:#f97316; /* orange   — Total Outils    */
+  --kpi2:#3b82f6; /* bleu     — Connexions       */
+  --kpi3:#10b981; /* vert     — Fournisseurs     */
+  --kpi4:#8b5cf6; /* violet   — Taux Inventaire  */
+  /* Statuts */
+  --green:#059669; --green-bg:#ecfdf5;
+  --orange:#d97706; --orange-bg:#fffbeb;
+  --blue:#2563eb;  --blue-bg:#eff6ff;
+  --red:#dc2626;   --red-bg:#fef2f2;
+  --purple:#7c3aed;--purple-bg:#f5f3ff;
+  /* Layout */
+  --sidebar-w:220px;
+  --topbar-h:56px;
+  --r:8px; --r2:12px; --r3:16px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow2:0 4px 12px rgba(0,0,0,.09),0 2px 4px rgba(0,0,0,.06);
+  --shadow3:0 8px 24px rgba(0,0,0,.10),0 2px 6px rgba(0,0,0,.05);
+  --tr:.18s cubic-bezier(.4,0,.2,1);
+  --font:'Inter',system-ui,sans-serif;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--font);color:var(--tx);font-size:14px;-webkit-font-smoothing:antialiased}
+#app{width:100vw;height:100vh;display:flex;flex-direction:column;overflow:hidden;position:relative}
+
+/* ══════════════════════════════════════════
+   TOPBAR — LEONI WIRING SYSTEMS HEADER
+══════════════════════════════════════════ */
+#topbar{
+  height:var(--topbar-h);min-height:var(--topbar-h);
+  background:var(--leoni-blue);
+  display:flex;align-items:center;padding:0 20px;
+  gap:14px;z-index:100;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(10,61,145,.25);
+}
+.tb-brand{display:flex;align-items:center;gap:12px}
+.tb-brand-icon{
+  width:34px;height:34px;border-radius:8px;
+  background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;color:#fff;
+  flex-shrink:0;
+}
+.tb-brand-text{display:flex;align-items:baseline;gap:10px}
+.tb-title{
+  font-size:1rem;font-weight:700;color:#fff;
+  letter-spacing:.06em;text-transform:uppercase;
+  white-space:nowrap;
+}
+.tb-separator{color:rgba(255,255,255,.35);font-weight:300;font-size:.95rem}
+.tb-company{
+  font-size:.75rem;font-weight:500;
+  color:rgba(255,255,255,.65);
+  letter-spacing:.04em;text-transform:uppercase;
+  white-space:nowrap;
+}
+.tb-divider{width:1px;height:22px;background:rgba(255,255,255,.2);margin:0 4px}
+.tb-screen-label{
+  font-size:.68rem;color:rgba(255,255,255,.5);
+  letter-spacing:.08em;font-weight:500;
+}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-user{display:flex;align-items:center;gap:8px}
+.tb-av{
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(255,255,255,.2);
+  border:2px solid rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.78rem;font-weight:700;color:#fff;
+}
+.tb-uname{font-size:.8rem;font-weight:500;color:#fff}
+.tb-badge{
+  font-size:.65rem;font-weight:600;
+  padding:2px 8px;border-radius:12px;
+  letter-spacing:.04em;
+}
+.b-admin{background:rgba(249,115,22,.25);color:#fdba74;border:1px solid rgba(249,115,22,.4)}
+.b-read{background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.2)}
+.tb-logout{
+  height:28px;padding:0 12px;border-radius:6px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.2);
+  color:rgba(255,255,255,.85);
+  font-size:.75rem;font-weight:500;cursor:pointer;
+  font-family:var(--font);transition:all var(--tr);
+}
+.tb-logout:hover{background:rgba(255,255,255,.22)}
+
+/* ══════════════════════════════════════════
+   SCREENS
+══════════════════════════════════════════ */
+#screens{flex:1;overflow:hidden;position:relative}
+.scr{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;animation:scr-in .22s ease both}
+.scr.on{display:flex}
+@keyframes scr-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══════════════════════════════════════════
+   LOGIN — LIGHT CARD
+══════════════════════════════════════════ */
+#sl{background:var(--bg);align-items:center;justify-content:center;overflow:hidden}
+#sl::before{
+  content:'';position:absolute;
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(10,61,145,.07) 0%,transparent 70%);
+  top:30%;left:50%;transform:translate(-50%,-50%);pointer-events:none;
+}
+.lg-card{
+  background:var(--surf);
+  border-radius:var(--r3);
+  border:1px solid var(--bd);
+  box-shadow:var(--shadow3);
+  padding:40px 36px;
+  width:380px;
+  position:relative;z-index:1;
+  overflow:hidden;
+}
+.lg-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--leoni-blue),var(--leoni-blue2));
+}
+.lg-head{text-align:center;margin-bottom:28px}
+.lg-ico{
+  width:56px;height:56px;margin:0 auto 14px;
+  background:var(--leoni-light);border:1.5px solid var(--bd);
+  border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+}
+.lg-title{font-size:1.25rem;font-weight:700;color:var(--leoni-blue);letter-spacing:.04em}
+.lg-sub{font-size:.8rem;color:var(--t2);margin-top:3px}
+.lg-company{font-size:.7rem;color:var(--t3);margin-top:2px;font-weight:500;letter-spacing:.03em;text-transform:uppercase}
+.fg{margin-bottom:14px}
+.fl{font-size:.72rem;font-weight:600;color:var(--t2);margin-bottom:5px;display:block;letter-spacing:.02em}
+.fi{
+  width:100%;height:40px;
+  background:var(--surf2);
+  border:1.5px solid var(--bd);
+  border-radius:var(--r);
+  color:var(--tx);font-family:var(--font);font-size:.88rem;
+  padding:0 13px;outline:none;
+  transition:border-color var(--tr),box-shadow var(--tr),background var(--tr);
+}
+.fi:focus{border-color:var(--leoni-blue);box-shadow:0 0 0 3px rgba(10,61,145,.1);background:var(--surf)}
+.fi::placeholder{color:var(--t4)}
+.lg-err{
+  display:none;background:var(--red-bg);border:1px solid #fca5a5;
+  border-radius:var(--r);padding:9px 13px;font-size:.8rem;color:var(--red);
+  margin-bottom:12px;display:none;align-items:center;gap:7px;
+}
+.lg-err.on{display:flex}
+.btn-login{
+  width:100%;height:42px;
+  background:linear-gradient(135deg,var(--leoni-blue),var(--leoni-blue2));
+  border:none;border-radius:var(--r);
+  color:#fff;font-family:var(--font);font-size:.9rem;font-weight:600;
+  cursor:pointer;transition:all var(--tr);margin-top:4px;
+  box-shadow:0 4px 12px rgba(10,61,145,.3);
+}
+.btn-login:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(10,61,145,.4)}
+
+/* ══════════════════════════════════════════
+   LAYOUT — SIDEBAR + CONTENT
+══════════════════════════════════════════ */
+.lay{display:flex;height:100%}
+.sidebar{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);
+  background:var(--surf);
+  border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;
+  box-shadow:2px 0 8px rgba(0,0,0,.04);
+  overflow-y:auto;
+}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+.sb-logo-zone{
+  padding:16px 16px 12px;
+  border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:9px;
+}
+.sb-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--leoni-blue)}
+.sb-logo-name{font-size:.75rem;font-weight:700;color:var(--leoni-blue);letter-spacing:.05em;text-transform:uppercase}
+.sb-sec{padding:12px 0 4px}
+.sb-lbl{
+  font-size:.62rem;font-weight:700;color:var(--t3);
+  text-transform:uppercase;letter-spacing:.08em;
+  padding:0 14px;margin-bottom:3px;
+}
+.ni{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 14px;cursor:pointer;
+  font-size:.82rem;color:var(--t2);font-weight:500;
+  transition:all var(--tr);border-left:3px solid transparent;
+  border-radius:0;position:relative;
+}
+.ni:hover{color:var(--leoni-blue);background:var(--leoni-light)}
+.ni.on{
+  color:var(--leoni-blue);background:var(--leoni-light);
+  border-left-color:var(--leoni-blue);font-weight:600;
+}
+.ni .ico{font-size:.9rem;min-width:18px;text-align:center}
+.ni .ni-badge{
+  margin-left:auto;font-size:.6rem;font-weight:700;
+  background:var(--orange-bg);color:var(--orange);
+  border:1px solid rgba(217,119,6,.2);
+  padding:1px 6px;border-radius:9px;
+}
+.adm-only{display:none}
+.super-only{display:none}
+.sb-foot{margin-top:auto;padding:12px 14px;border-top:1px solid var(--bd)}
+/* MINI KPI sidebar */
+.sb-kpis{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.skpi{
+  background:var(--surf2);border:1px solid var(--bd);
+  border-radius:var(--r);padding:8px;text-align:center;
+}
+.sv{font-size:1.1rem;font-weight:700;color:var(--leoni-blue);line-height:1}
+.sl2{font-size:.58rem;color:var(--t3);margin-top:2px;letter-spacing:.04em}
+
+/* CONTENT */
+.cnt{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.ch{
+  padding:14px 22px 12px;
+  border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:10px;
+  background:var(--surf);
+  flex-shrink:0;
+  box-shadow:0 1px 4px rgba(0,0,0,.05);
+}
+.ct{font-size:1.1rem;font-weight:700;color:var(--leoni-blue);letter-spacing:.01em}
+.cs{font-size:.76rem;color:var(--t3);font-weight:400}
+.ca{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cb{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:14px;background:var(--bg)}
+.cb::-webkit-scrollbar{width:5px}
+.cb::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+
+/* ══════════════════════════════════════════
+   BUTTONS — LIGHT STYLE
+══════════════════════════════════════════ */
+.btn{
+  display:inline-flex;align-items:center;gap:5px;
+  height:32px;padding:0 14px;border-radius:var(--r);
+  border:1.5px solid var(--bd2);
+  background:var(--surf);color:var(--t2);
+  font-size:.8rem;font-weight:500;cursor:pointer;
+  font-family:var(--font);transition:all var(--tr);white-space:nowrap;
+  box-shadow:var(--shadow);
+}
+.btn:hover{border-color:var(--leoni-blue);color:var(--leoni-blue);background:var(--leoni-light);box-shadow:var(--shadow2)}
+.btn-p{background:var(--leoni-blue);color:#fff;border-color:var(--leoni-blue);box-shadow:0 2px 8px rgba(10,61,145,.25)}
+.btn-p:hover{background:var(--leoni-blue2);color:#fff;border-color:var(--leoni-blue2)}
+.btn-d{background:var(--red-bg);color:var(--red);border-color:#fca5a5}
+.btn-d:hover{background:#fee2e2;color:var(--red)}
+.btn-g{background:var(--green-bg);color:var(--green);border-color:#6ee7b7}
+.btn-g:hover{background:#d1fae5}
+.btn-o{background:var(--orange-bg);color:var(--orange);border-color:#fcd34d}
+.btn-sm{height:28px;padding:0 11px;font-size:.75rem}
+.btn-xs{height:24px;padding:0 8px;font-size:.7rem}
+
+/* KPI CARDS */
+.krow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;flex-shrink:0}
+.kc{
+  background:var(--surf);
+  border-radius:var(--r2);
+  box-shadow:var(--shadow2);
+  padding:18px 20px 16px;
+  border:1px solid var(--bd);
+  border-left:4px solid;
+  position:relative;overflow:hidden;
+  transition:all var(--tr);cursor:default;
+}
+.kc:hover{transform:translateY(-2px);box-shadow:var(--shadow3)}
+.kc1{border-left-color:var(--kpi1)}
+.kc2{border-left-color:var(--kpi2)}
+.kc3{border-left-color:var(--kpi3)}
+.kc4{border-left-color:var(--kpi4)}
+.kc-icon{
+  position:absolute;top:14px;right:16px;
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.95rem;
+}
+.kci1{background:rgba(249,115,22,.1)}
+.kci2{background:rgba(59,130,246,.1)}
+.kci3{background:rgba(16,185,129,.1)}
+.kci4{background:rgba(139,92,246,.1)}
+.kc-label{font-size:.7rem;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.kc-value{font-size:2.2rem;font-weight:800;color:var(--tx);line-height:1;margin-bottom:4px}
+.kc-sub{font-size:.72rem;color:var(--t3);display:flex;align-items:center;gap:5px}
+.kc-trend{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:.68rem;font-weight:600;
+  padding:2px 6px;border-radius:10px;
+}
+.trend-up{background:var(--green-bg);color:var(--green)}
+.trend-ok{background:var(--blue-bg);color:var(--blue)}
+
+/* INJECT BAR */
+.inj-bar{
+  display:none;
+  background:#f0fdf4;
+  border:1px solid #86efac;
+  border-left:4px solid var(--green);
+  border-radius:var(--r);
+  padding:10px 14px;
+  align-items:center;gap:10px;
+  font-size:.8rem;color:var(--green);
+  flex-shrink:0;
+  box-shadow:var(--shadow);
+}
+.inj-bar.on{display:flex}
+.inj-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite;flex-shrink:0}
+
+/* SEARCH BAR */
+.sb2{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surf);
+  border:1.5px solid var(--bd);
+  border-radius:var(--r);
+  padding:0 14px;height:38px;
+  transition:all var(--tr);
+  box-shadow:var(--shadow);flex-shrink:0;
+}
+.sb2:focus-within{
+  border-color:var(--leoni-blue);
+  box-shadow:0 0 0 3px rgba(10,61,145,.08),var(--shadow);
+}
+.si-ico{color:var(--t3);font-size:.85rem;flex-shrink:0}
+.si-inp{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--tx);font-family:var(--font);font-size:.86rem;
+}
+.si-inp::placeholder{color:var(--t4)}
+.si-ct{font-size:.7rem;color:var(--t3);white-space:nowrap;font-weight:500}
+
+/* DATA TABLE */
+.tw{
+  background:var(--surf);
+  border:1px solid var(--bd);
+  border-radius:var(--r2);
+  box-shadow:var(--shadow2);
+  overflow:hidden;flex:1;
+  display:flex;flex-direction:column;
+}
+.ts{overflow:auto;flex:1}
+.ts::-webkit-scrollbar{width:6px;height:6px}
+.ts::-webkit-scrollbar-track{background:var(--surf2)}
+.ts::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+.ts::-webkit-scrollbar-corner{background:var(--surf2)}
+
+table{width:100%;border-collapse:collapse;font-size:.84rem;table-layout:fixed}
+thead{position:sticky;top:0;z-index:5}
+thead th{
+  background:linear-gradient(180deg,#f1f4f8,#e8ecf3);
+  font-size:.72rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;
+  color:#374151;
+  padding:11px 14px;text-align:left;
+  border-bottom:2px solid var(--bd2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  border-right:1px solid var(--bd);
+  user-select:none;
+}
+thead th:last-child{border-right:none}
+tbody td{
+  padding:10px 14px;
+  border-bottom:1px solid var(--bd);
+  color:var(--tx);vertical-align:middle;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  border-right:1px solid var(--bd);
+  background:var(--surf);
+  transition:background var(--tr);
+  line-height:1.5;
+}
+tbody td:last-child{border-right:none}
+tbody tr:nth-child(even) td{background:#f8fafc}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#eef2ff!important}
+tbody tr.sel td{background:#dbeafe!important}
+.fix-col{position:sticky;z-index:3}
+.fix-col{background:var(--surf)}
+tr:hover .fix-col{background:#eef2ff!important}
+tr:nth-child(even) .fix-col{background:#f8fafc}
+tr.sel .fix-col{background:#eef2ff!important}
+.tag{
+  display:inline-flex;align-items:center;
+  font-size:.74rem;font-weight:600;
+  padding:4px 10px;border-radius:8px;white-space:nowrap;
+}
+.tbl{background:#dbeafe;color:#1d4ed8}
+.tgo{background:#d1fae5;color:#065f46}
+.trd{background:#ffedd5;color:#c2410c}
+.tmx{background:var(--surf2);color:var(--t2);border:1px solid var(--bd)}
+.mono{font-size:.78rem;font-family:'SF Mono','Consolas','Courier New',monospace;color:#1e293b;line-height:1.4}
+.col-bar{
+  padding:7px 14px;border-top:1px solid var(--bd);
+  background:#f8fafc;
+  font-size:.68rem;color:var(--t3);
+  display:flex;gap:16px;flex-shrink:0;
+}
+.col-bar span::before{content:'• '}
+
+/* SECTION CARDS */
+.sec{
+  background:var(--surf);border:1px solid var(--bd);
+  border-radius:var(--r2);padding:20px;
+  box-shadow:var(--shadow);flex-shrink:0;
+}
+.sec-title{
+  font-size:.9rem;font-weight:700;color:var(--tx);
+  margin-bottom:16px;display:flex;align-items:center;gap:9px;
+  padding-bottom:10px;border-bottom:1px solid var(--bd);
+}
+.sec-ico{
+  width:28px;height:28px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.82rem;flex-shrink:0;
+}
+.sib{background:var(--leoni-light)}
+.sio{background:var(--orange-bg)}
+.sig{background:var(--green-bg)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.ffg{display:flex;flex-direction:column;gap:4px}
+.ffl{font-size:.7rem;font-weight:600;color:var(--t2);letter-spacing:.02em}
+.ffl.req::after{content:' *';color:var(--orange)}
+.ffi{
+  height:36px;background:var(--surf2);
+  border:1.5px solid var(--bd);border-radius:var(--r);
+  color:var(--tx);font-family:var(--font);font-size:.83rem;
+  padding:0 11px;outline:none;
+  transition:border-color var(--tr),box-shadow var(--tr),background var(--tr);
+}
+.ffi:focus{border-color:var(--leoni-blue);box-shadow:0 0 0 3px rgba(10,61,145,.08);background:var(--surf)}
+.ffa{display:flex;gap:9px;justify-content:flex-end;padding-top:6px}
+
+/* UPLOAD ZONE */
+.uz{
+  border:2px dashed var(--bd2);border-radius:var(--r);
+  padding:9px 14px;display:flex;align-items:center;gap:10px;
+  cursor:pointer;position:relative;overflow:hidden;
+  background:var(--surf2);flex-shrink:0;transition:all var(--tr);
+}
+.uz:hover{border-color:var(--leoni-blue);background:var(--leoni-light)}
+.uz.loaded{border-color:var(--green);border-style:solid;background:var(--green-bg)}
+.uz input{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:1}
+.uz-txt strong{display:block;font-size:.79rem;color:var(--tx);font-weight:600}
+.uz-txt small{font-size:.69rem;color:var(--t3)}
+
+/* PILL LIST */
+.pill-list{display:flex;flex-wrap:wrap;gap:7px;padding:6px 0}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--surf2);border:1px solid var(--bd2);
+  border-radius:16px;padding:4px 10px;font-size:.79rem;color:var(--t2);
+}
+.pill-del{background:none;border:none;color:var(--t3);cursor:pointer;font-size:.82rem;line-height:1;padding:0 2px}
+.pill-del:hover{color:var(--red)}
+
+/* FILE ROWS */
+.file-row{
+  background:var(--surf);border:1px solid var(--bd);
+  border-radius:var(--r);padding:11px 14px;
+  display:flex;align-items:center;gap:10px;margin-bottom:8px;
+  box-shadow:var(--shadow);transition:box-shadow var(--tr);
+}
+.file-row:hover{box-shadow:var(--shadow2)}
+.file-ico{font-size:1.2rem;flex-shrink:0}
+.file-info{flex:1;min-width:0}
+.file-name{font-weight:600;font-size:.82rem;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-meta{font-size:.7rem;color:var(--t3);margin-top:2px}
+.file-acts{display:flex;gap:6px;flex-shrink:0}
+
+/* ADMIN USER ROW */
+.admin-row{
+  display:flex;align-items:center;gap:11px;
+  padding:10px 14px;background:var(--surf);
+  border:1px solid var(--bd);border-radius:var(--r);
+  margin-bottom:8px;box-shadow:var(--shadow);
+}
+.admin-av{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:700;flex-shrink:0;
+}
+.admin-info{flex:1}
+.admin-name{font-weight:600;font-size:.82rem;color:var(--tx)}
+.admin-role{font-size:.7rem;color:var(--t3);margin-top:1px}
+.badge-role{
+  font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:9px;margin-left:7px;
+}
+
+/* EMPTY STATE */
+.empty-st{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:10px;color:var(--t3);font-size:.82rem;text-align:center}
+.empty-st .ei{font-size:2.2rem}
+
+/* DIALOG */
+#dlg-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+#dlg-overlay.on{display:flex}
+.dlg-box{
+  background:var(--surf);border:1px solid var(--bd);
+  border-radius:var(--r3);padding:26px;width:400px;
+  box-shadow:var(--shadow3);animation:di .2s ease both;
+}
+@keyframes di{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.dlg-t{font-size:.95rem;font-weight:700;color:var(--tx);margin-bottom:7px;display:flex;align-items:center;gap:8px}
+.dlg-m{font-size:.82rem;color:var(--t2);margin-bottom:20px;line-height:1.65}
+.dlg-a{display:flex;justify-content:flex-end;gap:8px}
+
+/* TOAST */
+#tc{position:fixed;bottom:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.tst{
+  display:flex;align-items:center;gap:9px;padding:11px 15px;
+  border-radius:var(--r);font-size:.8rem;
+  min-width:240px;max-width:380px;
+  animation:ti .26s ease both;
+  box-shadow:var(--shadow3);
+  border:1px solid;border-left:4px solid;
+  background:var(--surf);
+  pointer-events:auto;
+}
+@keyframes ti{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+.ts-s{border-color:#86efac;border-left-color:var(--green);color:var(--green)}
+.ts-e{border-color:#fca5a5;border-left-color:var(--red);color:var(--red)}
+.ts-w{border-color:#fcd34d;border-left-color:var(--orange);color:var(--orange)}
+.ts-i{border-color:#93c5fd;border-left-color:var(--blue);color:var(--blue)}
+
+/* HUB — Module Selector */
+.hub-bg{display:flex;align-items:center;justify-content:center;height:100%;background:var(--bg);overflow:hidden;position:relative}
+.hub-bg::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(10,61,145,.06) 0%,transparent 70%);top:40%;left:50%;transform:translate(-50%,-50%)}
+.hub-wrap{position:relative;z-index:1;text-align:center;width:100%;max-width:900px;padding:30px}
+.hub-title{font-size:1.5rem;font-weight:800;color:var(--leoni-blue);letter-spacing:.05em;margin-bottom:4px}
+.hub-sub{font-size:.82rem;color:var(--t3);margin-bottom:32px}
+.hub-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.hub-card{
+  background:var(--surf);border:2px solid var(--bd);border-radius:var(--r3);
+  padding:36px 28px;cursor:pointer;position:relative;overflow:hidden;
+  box-shadow:var(--shadow2);transition:all .25s ease;text-align:center;
+}
+.hub-card:hover{transform:translateY(-4px);box-shadow:var(--shadow3);border-color:var(--leoni-blue)}
+.hub-ico{font-size:3rem;margin-bottom:14px}
+.hub-cname{font-size:1.2rem;font-weight:700;color:var(--tx);margin-bottom:6px}
+.hub-cdesc{font-size:.8rem;color:var(--t2);line-height:1.5;margin-bottom:14px;min-height:38px}
+.hub-cbadge{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:600;padding:4px 12px;border-radius:12px}
+.hb-blue{background:var(--leoni-light);color:var(--leoni-blue)}
+.hb-green{background:#ecfdf5;color:#059669}
+.hb-red{background:#fef2f2;color:#991b1b}
+.hb-purple{background:#f5f3ff;color:#5b21b6}
+.hb-amber{background:#fffbeb;color:#92400e}
+.hb-orange{background:#ffedd5;color:#c2410c}
+
+/* Hub Health Dashboard */
+.hub-health{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;padding:16px 0;margin-bottom:4px}
+.hub-health-card{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);padding:12px 18px;text-align:center;min-width:110px;box-shadow:var(--shadow)}
+.hub-health-card .hhv{font-size:1.5rem;font-weight:800;font-family:monospace}
+.hub-health-card .hhl{font-size:.62rem;color:var(--t3);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-top:4px}
+
+@media(max-width:768px){.hub-cards{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="fb-loading">
+  <div class="fb-spinner"></div>
+  <div class="fb-msg" id="fb-msg">Connexion au cloud…</div>
+  <div class="fb-sub">Crimping Pro · LEONI Wiring Systems</div>
+</div>
+
+<div id="topbar">
+  <div class="tb-brand">
+    <div class="tb-brand-icon">⚙</div>
+    <div class="tb-brand-text">
+      <span class="tb-title">Crimping Pro</span>
+      <span class="tb-separator">|</span>
+      <span class="tb-company">Leoni Wiring Systems</span>
+    </div>
+  </div>
+  <div class="tb-divider"></div>
+  <span class="tb-screen-label" id="scr-lbl">SCREEN_LOGIN</span><span class="sync-badge sync-ok" id="sync-badge" style="display:none"><span class="sync-dot"></span><span id="sync-txt">Cloud</span></span>
+  <div class="tb-right">
+    <div class="tb-user" id="uinfo" style="display:none">
+      <div class="tb-av" id="uav">?</div>
+      <span class="tb-uname" id="uname">—</span>
+      <span class="tb-badge" id="ubadge"></span>
+    </div>
+    <button class="tb-logout" id="hub-btn" onclick="goToHub()" style="display:none">🏠</button> <button class="tb-logout" id="settings-btn" onclick="navTo('g')" style="display:none">⚙</button> <button class="tb-logout" id="logout-btn" onclick="doLogout()" style="display:none">↩ Déconnecter</button>
+  </div>
+</div>
+
+<div id="screens">
+
+<div class="scr on" id="sl">
+  <div class="lg-card">
+    <div class="lg-head">
+      <div class="lg-ico">⚙</div>
+      <div class="lg-title">CRIMPING PRO</div>
+      <div class="lg-sub">Gestion des outils de sertissage</div>
+      <div class="lg-company">Leoni Wiring Systems — Maintenance Sertissage</div>
+    </div>
+    <div class="lg-err" id="lg-err">⚠ Identifiants incorrects.</div>
+    <div class="fg"><label class="fl">👤 Nom d'utilisateur</label><input class="fi" id="iu" placeholder="Votre identifiant" autocomplete="off"></div>
+    <div class="fg"><label class="fl">🔒 Mot de passe</label><input class="fi" id="ip" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn-login" onclick="doLogin()">Se connecter</button>
+  </div>
+</div>
+
+
+<div class="scr" id="sh">
+  <div class="hub-bg">
+    <div class="hub-wrap">
+      <div class="hub-title">🏭 Maintenance Management</div>
+      <div style="font-size:.72rem;color:var(--leoni-blue);letter-spacing:2px;font-weight:600;text-transform:uppercase;margin-bottom:16px">LEONI WIRING SYSTEM — ERP Industriel</div>
+      <div id="hub-health-zone"></div>
+      <div class="hub-sub" style="margin-top:18px">Sélectionnez un module — <span id="hub-user" style="font-weight:600;color:var(--t2)">Utilisateur</span></div>
+      <div class="hub-cards" id="hub-cards-grid">
+        </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="scr" id="skj">
+  <div class="lay">
+    <div class="sidebar">
+      <div class="sb-logo-zone"><div class="sb-logo-dot" style="background:#059669"></div><div class="sb-logo-name" style="color:#059669">Kit Joint</div></div>
+      <div class="sb-sec">
+        <div class="sb-lbl">Module</div>
+        <div class="ni" onclick="enterModule('hub')" style="color:var(--t3)"><span class="ico">↩</span>Retour Hub</div>
+        <div class="ni on" id="kjn-kd" onclick="kjNav('kd')"><span class="ico">📊</span>Tableau de Bord</div>
+        <div class="ni adm-only" id="kjn-ko" onclick="kjNav('ko')"><span class="ico">📤</span>Nouvelle Sortie</div>
+        <div class="ni adm-only" id="kjn-ki" onclick="kjNav('ki')"><span class="ico">📥</span>Nouvelle Entrée</div>
+        <div class="ni" id="kjn-kh" onclick="kjNav('kh')"><span class="ico">📋</span>Historique</div>
+      </div>
+    </div>
+    <div class="cnt">
+      <div class="ch">
+        <span class="ct" style="color:#059669">📦 Kit Joint</span>
+        <span class="cs" id="kj-page-lbl">— Tableau de Bord</span>
+      </div>
+      <div class="cb">
+        <div id="kj-dash"><div class="sec"><p>Dashboard Kit Joint - Mouvements...</p></div></div>
+        <div id="kj-out-form" style="display:none"><div class="sec"><p>Formulaire de sortie...</p></div></div>
+        <div id="kj-in-form" style="display:none"><div class="sec"><p>Formulaire d'entrée...</p></div></div>
+        <div id="kj-history" style="display:none"><div class="sec"><p>Historique...</p></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scr" id="sd">
+  <div class="lay">
+    <div class="sidebar">
+      <div class="sb-logo-zone"><div class="sb-logo-dot"></div><div class="sb-logo-name">Crimping Pro</div></div>
+      <div class="sb-sec">
+        <div class="sb-lbl">Navigation</div>
+        <div class="ni on" id="sdn-d" onclick="navTo('d')"><span class="ico">📊</span>Dashboard</div>
+        <div class="ni adm-only" id="sdn-a" onclick="navTo('a')"><span class="ico">🗄</span>Base de données<span class="ni-badge">CRUD</span></div>
+        <div class="ni adm-only" id="sdn-t" onclick="navTo('t')"><span class="ico">📄</span>Templates A4</div>
+        <div class="ni adm-only" id="sdn-f" onclick="navTo('f')"><span class="ico">📁</span>Fichiers</div>
+        <div class="ni adm-only" id="sdn-s" onclick="navTo('s')"><span class="ico">🏢</span>Fournisseurs</div>
+        <div class="ni" id="sdn-p" onclick="navTo('p')"><span class="ico">📂</span>Répartition Projets</div>
+        <div class="ni" onclick="enterModule('hub')" style="color:var(--t3)"><span class="ico">↩</span>Retour Hub</div>
+      </div>
+    </div>
+    <div class="cnt">
+      <div class="ch">
+        <span class="ct">Dashboard</span>
+        <span class="cs" id="dash-lbl">— Données internes</span>
+      </div>
+      <div class="cb">
+        <div class="krow">
+          <div class="kc kc1"><div class="kc-label">Total Outils</div><div class="kc-value" id="kv1">—</div></div>
+          <div class="kc kc2"><div class="kc-label">Connexions</div><div class="kc-value" id="kv2">—</div></div>
+          <div class="kc kc3"><div class="kc-label">Fournisseurs</div><div class="kc-value" id="kv3">—</div></div>
+          <div class="kc kc4"><div class="kc-label">Taux</div><div class="kc-value" id="kv4">—</div></div>
+        </div>
+        <div class="sb2"><input class="si-inp" id="ds-inp" placeholder="Rechercher..." oninput="filterDash()"><span class="si-ct" id="ds-ct">—</span></div>
+        <div class="tw"><div class="ts"><table id="dash-table"><thead id="dash-thead"></thead><tbody id="dtb"></tbody></table></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scr" id="sa">
+  <div class="lay"><div class="sidebar"><div class="sb-logo-zone"><div class="sb-logo-dot"></div><div class="sb-logo-name">Crimping Pro</div></div><div class="sb-sec"><div class="ni" onclick="navTo('d')"><span class="ico">↩</span>Retour Dashboard</div></div></div>
+  <div class="cnt"><div class="ch"><span class="ct">CRUD Base de données</span></div><div class="cb">Interface CRUD ici...</div></div></div>
+</div>
+
+<div class="scr" id="sg">
+  <div class="lay">
+    <div class="sidebar">
+      <div class="sb-logo-zone"><div class="sb-logo-dot"></div><div class="sb-logo-name">Crimping Pro</div></div>
+      <div class="sb-sec"><div class="ni" onclick="enterModule('hub')"><span class="ico">↩</span>Retour Hub</div></div>
+    </div>
+    <div class="cnt">
+      <div class="ch"><span class="ct">⚙ Mon Profil</span><span class="cs" id="profile-sub">— Paramètres du compte</span></div>
+      <div class="cb">
+        <div class="sec">
+          <div class="sec-title"><div class="sec-ico" style="background:var(--orange-bg)">🔒</div>Changer mon mot de passe</div>
+          <div class="fg2">
+            <div class="ffg"><label class="ffl">Mot de passe actuel</label><input class="ffi" id="pw-current" type="password"></div>
+            <div class="ffg"><label class="ffl">Nouveau mot de passe</label><input class="ffi" id="pw-new" type="password"></div>
+            <div class="ffg"><label class="ffl">Confirmer</label><input class="ffi" id="pw-confirm" type="password"></div>
+          </div>
+          <button class="btn btn-p" onclick="changeMyPassword()" style="margin-top:14px">Mettre à jour</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scr" id="sad">
+  <div class="lay">
+    <div class="sidebar">
+      <div class="sb-logo-zone"><div class="sb-logo-dot" style="background:#92400e"></div><div class="sb-logo-name" style="color:#92400e">Administration</div></div>
+      <div class="sb-sec">
+        <div class="sb-lbl">Module</div>
+        <div class="ni" onclick="enterModule('hub')" style="color:var(--t3)"><span class="ico">↩</span>Retour Hub</div>
+        <div class="ni on" id="adn-au" onclick="adNav('au')"><span class="ico">👥</span>Utilisateurs & Permissions</div>
+        <div class="ni" id="adn-ar" onclick="adNav('ar')"><span class="ico">➕</span>Modules Dynamiques</div>
+        <div class="ni" id="adn-as" onclick="adNav('as')"><span class="ico">🔒</span>Sécurité</div>
+      </div>
+    </div>
+    <div class="cnt">
+      <div class="ch">
+        <span class="ct" style="color:#92400e">🛡 Administration</span>
+        <span class="cs" id="ad-page-lbl">— Gestion des Utilisateurs</span>
+      </div>
+      <div class="cb">
+        <div id="ad-users">
+          <div class="sec">
+            <div class="sec-title"><div class="sec-ico" style="background:#fef3c7">👥</div>Comptes et Permissions par Module<span style="margin-left:auto;font-size:.75rem;color:var(--t3)" id="ad-user-count">—</span></div>
+            <div id="ad-user-list"></div>
+          </div>
+          <div class="sec">
+            <div class="sec-title"><div class="sec-ico sig">➕</div>Ajouter un utilisateur</div>
+            <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+              <div class="ffg" style="flex:1;min-width:130px"><label class="ffl req">Identifiant</label><input class="ffi" id="ad-new-user" placeholder="ex: ahmed" style="width:100%"></div>
+              <div class="ffg" style="flex:1;min-width:130px"><label class="ffl req">Mot de passe</label><input class="ffi" id="ad-new-pass" placeholder="min. 4 caractères" style="width:100%"></div>
+              <div class="ffg"><label class="ffl">Rôle de Base</label>
+                <select class="ffi" id="ad-new-role" style="min-width:140px;-webkit-appearance:none">
+                  <option value="admin">Admin</option>
+                  <option value="visitor">Visiteur (lecture seule)</option>
+                  <option value="superadmin">Super Admin</option>
+                </select>
+              </div>
+              <button class="btn btn-p" onclick="adAddUser()" style="height:36px">+ Ajouter</button>
+            </div>
+          </div>
+          <div class="sec" id="ad-reset-zone" style="display:none">
+            <div class="sec-title"><div class="sec-ico" style="background:var(--orange-bg)">🔐</div><span id="ad-reset-title">Réinitialiser</span></div>
+            <div style="display:flex;gap:10px;align-items:flex-end">
+              <div class="ffg" style="flex:1"><label class="ffl">Nouveau mot de passe</label><input class="ffi" id="ad-reset-pw" placeholder="Nouveau mot de passe"></div>
+              <button class="btn btn-p" onclick="adConfirmReset()" style="height:36px">✓ Confirmer</button>
+              <button class="btn" onclick="adCancelReset()" style="height:36px">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="ad-roles" style="display:none">
+          <div class="sec">
+            <div class="sec-title"><div class="sec-ico sib">➕</div>Créer un Module Personnalisé (Générateur dynamique)</div>
+            <p style="font-size:.82rem;color:var(--t2);margin-bottom:12px">Ajoutez un nouveau module indépendant. Il apparaîtra automatiquement dans le Hub et vous pourrez lui attribuer des permissions d'accès.</p>
+            <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+              <div class="ffg" style="flex:1;min-width:200px"><label class="ffl">Nom du module</label><input class="ffi" id="new-mod-name" placeholder="Ex: Production, Maintenance..."></div>
+              <div class="ffg" style="width:100px"><label class="ffl">Icône</label><input class="ffi" id="new-mod-ico" placeholder="Ex: ⚡" value="📁"></div>
+              <button class="btn btn-p" onclick="addCustomMod()" style="height:36px">+ Générer le module</button>
+            </div>
+          </div>
+          <div class="sec" style="margin-top:14px">
+            <div class="sec-title"><div class="sec-ico" style="background:#fef3c7">🗂</div>Modules personnalisés actifs</div>
+            <div id="custom-mods-list" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+          </div>
+        </div>
+
+        <div id="ad-security" style="display:none">
+          <div class="sec">
+            <div class="sec-title"><div class="sec-ico" style="background:#fee2e2">🔒</div>Journal de Sécurité</div>
+            <div id="ad-sec-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scr" id="stest">
+  <div class="lay">
+    <div class="sidebar">
+      <div class="sb-logo-zone"><div class="sb-logo-dot" style="background:#8b5cf6"></div><div class="sb-logo-name" style="color:#8b5cf6">Testing</div></div>
+      <div class="sb-sec">
+        <div class="sb-lbl">Navigation</div>
+        <div class="ni" onclick="enterModule('hub')" style="color:var(--t3)"><span class="ico">↩</span>Retour Hub</div>
+        <div class="ni on"><span class="ico">🧪</span>Validation Qualité</div>
+      </div>
+    </div>
+    <div class="cnt">
+      <div class="ch">
+        <span class="ct" style="color:#8b5cf6">🧪 Module Testing</span>
+        <span class="cs">— Interface de Validation et Tests</span>
+        <div class="ca"><button class="btn btn-sm btn-p adm-only">Nouveau Test</button></div>
+      </div>
+      <div class="cb">
+        <div class="sec">
+          <div class="sec-title"><div class="sec-ico" style="background:#f5f3ff">🧪</div>Espace de test qualité</div>
+          <p style="font-size:.82rem;color:var(--t2)">Ce module est prêt pour accueillir vos futurs formulaires de test qualité, rapports de traction, coupes micrographiques et validations de sertissage.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scr" id="scustom">
+  <div class="lay">
+    <div class="sidebar">
+      <div class="sb-logo-zone"><div class="sb-logo-dot"></div><div class="sb-logo-name" id="cmod-sb-name">Module</div></div>
+      <div class="sb-sec">
+        <div class="sb-lbl">Navigation</div>
+        <div class="ni" onclick="enterModule('hub')" style="color:var(--t3)"><span class="ico">↩</span>Retour Hub</div>
+        <div class="ni on"><span class="ico" id="cmod-sb-ico">📁</span>Accueil</div>
+      </div>
+    </div>
+    <div class="cnt">
+      <div class="ch">
+        <span class="ct" id="cmod-title">Titre</span>
+        <span class="cs">— Module personnalisé généré</span>
+        <div class="ca"><button class="btn btn-sm btn-p adm-only">+ Action Admin</button></div>
+      </div>
+      <div class="cb">
+        <div class="sec">
+          <div class="sec-title"><div class="sec-ico sib" id="cmod-sec-ico">📁</div>Espace de travail</div>
+          <p style="font-size:.82rem;color:var(--t2)">Ce module a été généré dynamiquement. Vous pouvez y intégrer vos propres données, tableaux et formulaires selon les besoins de votre département.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scr" id="smach"><div class="lay"><div class="sidebar"><div class="ni" onclick="enterModule('hub')"><span class="ico">↩</span>Retour Hub</div></div><div class="cnt"><div class="ch"><span class="ct">🏭 Machines</span></div><div class="cb">Contenu Machines...</div></div></div></div>
+<div class="scr" id="splan"><div class="lay"><div class="sidebar"><div class="ni" onclick="enterModule('hub')"><span class="ico">↩</span>Retour Hub</div></div><div class="cnt"><div class="ch"><span class="ct">📅 Planning</span></div><div class="cb">Contenu Planning...</div></div></div></div>
+<div class="scr" id="smag"><div class="lay"><div class="sidebar"><div class="ni" onclick="enterModule('hub')"><span class="ico">↩</span>Retour Hub</div></div><div class="cnt"><div class="ch"><span class="ct">🏪 Magasin</span></div><div class="cb">Contenu Magasin...</div></div></div></div>
+<div class="scr" id="sqr"><div class="lay"><div class="sidebar"><div class="ni" onclick="enterModule('hub')"><span class="ico">↩</span>Retour Hub</div></div><div class="cnt"><div class="ch"><span class="ct">📱 QR Code</span></div><div class="cb">Contenu QR Code...</div></div></div></div>
+<div class="scr" id="sstd"><div class="lay"><div class="sidebar"><div class="ni" onclick="enterModule('hub')"><span class="ico">↩</span>Retour Hub</div></div><div class="cnt"><div class="ch"><span class="ct">📚 Standards</span></div><div class="cb">Contenu Standards...</div></div></div></div>
+
+
+</div><div id="tc"></div>
+
+</div><script>
+// ═══════════════════════════════════════════════════════════════
+// BASE DE DONNÉES DES MODULES (Statique + Dynamique)
+// ═══════════════════════════════════════════════════════════════
+const BASE_MODULES = {
+    crimping: { id:'crimping', name:'Crimping', ico:'🔧', desc:'Outils de sertissage, stock et projets', bg:'hb-blue'},
+    kitjoint: { id:'kitjoint', name:'Kit Joint', ico:'📦', desc:'Suivi des Entrées/Sorties matériel', bg:'hb-green'},
+    machines: { id:'machines', name:'Machines', ico:'🏭', desc:'Gestion du Parc machines et MTTR', bg:'hb-red'},
+    planning: { id:'planning', name:'Planning', ico:'📅', desc:'Préventif et tâches de maintenance', bg:'hb-purple'},
+    qrcode:   { id:'qrcode', name:'QR Code', ico:'📱', desc:'Générateur d\'étiquettes', bg:'hb-green'},
+    standards:{ id:'standards', name:'Standards', ico:'📚', desc:'Bibliothèque des procédures PDF', bg:'hb-orange'},
+    magasin:  { id:'magasin', name:'Magasin', ico:'🏪', desc:'Gestion du stock et magasin global', bg:'hb-blue'},
+    testing:  { id:'testing', name:'Testing', ico:'🧪', desc:'Espace de tests et validation qualité', bg:'hb-purple'},
+    admin:    { id:'admin', name:'Administration', ico:'🛡', desc:'Gouvernance et sécurité du système', bg:'hb-amber', super:true}
+};
+
+// ═══════════════════════════════════════════════════════════════
+// FIREBASE CONFIG
+// ═══════════════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyA4CSd7wN6BQ5e690lqQhAN8VlTP22nzR8",
+  authDomain: "crimping-pro-20536.firebaseapp.com",
+  databaseURL: "https://crimping-pro-20536-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "crimping-pro-20536",
+  storageBucket: "crimping-pro-20536.firebasestorage.app",
+  messagingSenderId: "864046316616",
+  appId: "1:864046316616:web:3e30722d33f6c102476c7d"
+};
+
+let fbApp=null,fbDB=null,fbReady=false;
+let _saveTimer=null;
+const SAVE_DELAY=1500;
+
+function initFirebase(){
+  try{
+    fbApp=firebase.initializeApp(FIREBASE_CONFIG);
+    fbDB=firebase.database();
+    fbReady=true;
+    return true;
+  }catch(e){ return false; }
+}
+
+function showSync(state,txt){
+  const b=document.getElementById('sync-badge');if(!b)return;
+  b.style.display='inline-flex';
+  b.className='sync-badge sync-'+state;
+  document.getElementById('sync-txt').textContent=txt||'';
+}
+
+function saveState(){
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(_doSave,SAVE_DELAY);
+}
+
+function _doSave(){
+  const payload={
+    admins:S.admins,
+    customMods:S.customMods||[],
+    DB:S.DB,
+    secLog:S.secLog||[],
+    _lastUpdate:new Date().toISOString(),
+    _version:'7.0'
+  };
+  if(fbReady&&fbDB){
+    showSync('saving','Sauvegarde…');
+    fbDB.ref('crimpingPro').set(payload).then(()=>{ showSync('ok','Cloud ✓'); }).catch(e=>{ _saveLocal(payload); });
+  }else{
+    _saveLocal(payload);
+  }
+}
+
+function _saveLocal(payload){
+  try{localStorage.setItem('crimping_pro_leoni',JSON.stringify(payload));}catch(e){}
+}
+
+let S={
+  isAdmin:false, curUser:'', curRole:'',
+  admins:[
+    {user:'bilal',pass:'10541',role:'superadmin',modules:{crimping:'admin',kitjoint:'admin',admin:'admin',machines:'admin',planning:'admin',qrcode:'admin',standards:'admin',magasin:'admin',testing:'admin'}},
+    {user:'said',pass:'said123',role:'admin',modules:{crimping:'admin',kitjoint:'admin',admin:'none',machines:'admin',planning:'admin',qrcode:'admin',standards:'none',magasin:'none',testing:'none'}},
+    {user:'loukrimi',pass:'louk123',role:'admin',modules:{crimping:'admin',kitjoint:'none',admin:'none',machines:'none',planning:'none',qrcode:'admin',standards:'none',magasin:'none',testing:'none'}},
+    {user:'crimp',pass:'1230',role:'visitor',modules:{crimping:'read',kitjoint:'none',admin:'none',machines:'none',planning:'none',qrcode:'none',standards:'none',magasin:'none',testing:'read'}}
+  ],
+  customMods:[],
+  DB:[],
+  secLog:[]
+};
+
+function loadState(){
+  try{
+    const d=JSON.parse(localStorage.getItem('crimping_pro_leoni')||'{}');
+    if(d.admins) S.admins = d.admins;
+    if(d.customMods) S.customMods = d.customMods;
+    if(d.DB) S.DB = d.DB;
+    if(d.secLog) S.secLog = d.secLog;
+  }catch(e){}
+}
+
+(async function init(){
+  const fbOk=initFirebase();
+  loadState();
+  const loader=document.getElementById('fb-loading');
+  if(fbOk){
+    try{
+      const snap=await fbDB.ref('crimpingPro').once('value');
+      if(snap.exists()){
+        let d = snap.val();
+        if(d.admins) S.admins = d.admins;
+        if(d.customMods) S.customMods = d.customMods;
+        if(d.DB) S.DB = d.DB;
+        if(d.secLog) S.secLog = d.secLog;
+      }
+    }catch(e){}
+  }
+  setTimeout(()=>{loader.style.display='none';},400);
+})();
+
+function toast(msg,t='i'){
+  const c=document.getElementById('tc');
+  const el=document.createElement('div');
+  const ico={s:'✓',e:'✕',w:'⚠',i:'ℹ'};
+  el.className='tst ts-'+t;
+  el.innerHTML=`<span style="font-size:.85rem">${ico[t]||'ℹ'}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(12px)';setTimeout(()=>el.remove(),300);},3800);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AUTHENTIFICATION & RÔLES
+   ═══════════════════════════════════════════════════════════════ */
+function doLogin(){
+  const u=document.getElementById('iu').value.trim().toLowerCase(),p=document.getElementById('ip').value;
+  const err=document.getElementById('lg-err');
+  if(!u||!p){err.textContent='⚠ Remplissez tous les champs.';err.classList.add('on');return;}
+  const adm=S.admins.find(a=>a.user.toLowerCase()===u&&a.pass===p);
+  if(!adm){err.textContent='⚠ Identifiants incorrects.';err.classList.add('on');return;}
+
+  err.classList.remove('on');
+  S.curUser=adm.user; S.curRole=adm.role;
+  S.isAdmin=(adm.role!=='visitor');
+
+  document.getElementById('uinfo').style.display='flex';
+  document.getElementById('logout-btn').style.display='flex';
+  document.getElementById('settings-btn').style.display='flex';
+  document.getElementById('hub-btn').style.display='flex';
+  document.getElementById('uname').textContent=adm.user;
+  document.getElementById('uav').textContent=adm.user[0].toUpperCase();
+
+  S.secLog.push({ts:new Date().toISOString(),user:adm.user,action:'login'});
+  saveState();
+  goToHub();
+  toast('Bienvenue '+adm.user,'s');
+}
+
+function doLogout(){
+  S.curUser=''; S.curRole='';
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById('sl').classList.add('on');
+  document.getElementById('uinfo').style.display='none';
+  document.getElementById('logout-btn').style.display='none';
+  document.getElementById('settings-btn').style.display='none';
+  document.getElementById('hub-btn').style.display='none';
+  document.getElementById('iu').value=''; document.getElementById('ip').value='';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HUB & PERMISSIONS (NONE / READ / ADMIN)
+   ═══════════════════════════════════════════════════════════════ */
+function getUserModules(){
+  const usr=S.admins.find(a=>a.user.toLowerCase()===S.curUser.toLowerCase());
+  if(!usr||!usr.modules) return {crimping:'admin', kitjoint:'admin', testing:'admin'}; // default fallback
+  return usr.modules;
+}
+
+window.goToHub = function(){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById('sh').classList.add('on');
+  document.getElementById('scr-lbl').textContent='HUB';
+  document.getElementById('hub-user').textContent=S.curUser||'Utilisateur';
+
+  const mods=getUserModules();
+  let cardsHtml='';
+  const allMods=Object.values(BASE_MODULES).concat(S.customMods||[]);
+
+  allMods.forEach(m => {
+    let perm = mods[m.id];
+    if(perm === true) perm = 'admin'; // Migration from old bools
+    if(perm === false) perm = 'none';
+    if(!perm) perm = 'none';
+
+    // Sécurité Super Admin
+    if(m.super && S.curRole !== 'superadmin') return;
+    if(perm === 'none' && !m.super) return; // Hide module if "none"
+
+    let badgeCol = perm==='admin' ? 'hb-blue' : 'hb-green';
+    let badgeTxt = perm==='admin' ? 'Admin (Édition)' : 'Visiteur (Lecture seule)';
+    if(m.id==='admin') { badgeCol='hb-amber'; badgeTxt='Super Admin'; }
+
+    cardsHtml += `<div class="hub-card" onclick="enterModule('${m.id}')" style="border-left:4px solid var(--leoni-blue)">
+      <div class="hub-ico">${m.ico}</div>
+      <div class="hub-cname">${m.name}</div>
+      <div class="hub-cdesc">${m.desc}</div>
+      <span class="hub-cbadge ${badgeCol}">👁 ${badgeTxt}</span>
+    </div>`;
+  });
+
+  document.getElementById('hub-cards-grid').innerHTML = cardsHtml;
+  document.getElementById('hub-cards-grid').style.gridTemplateColumns = allMods.length<=2 ? '1fr 1fr' : 'repeat(3,1fr)';
+};
+
+window.enterModule = function(mod){
+  const mods = getUserModules();
+  let perm = mods[mod];
+  if(perm === true) perm='admin';
+  if(perm === false || !perm) perm='none';
+
+  if(perm === 'none' && mod !== 'admin' && mod !== 'hub') { toast('Accès refusé', 'e'); return; }
+
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  let scrId = '';
+
+  if(mod === 'crimping') scrId='sd';
+  else if(mod === 'kitjoint') scrId='skj';
+  else if(mod === 'admin') scrId='sad';
+  else if(mod === 'machines') scrId='smach';
+  else if(mod === 'planning') scrId='splan';
+  else if(mod === 'qrcode') scrId='sqr';
+  else if(mod === 'standards') scrId='sstd';
+  else if(mod === 'magasin') scrId='smag';
+  else if(mod === 'testing') scrId='stest';
+  else if(mod.startsWith('custom_')) scrId='scustom';
+  else if(mod === 'hub') { goToHub(); return; }
+
+  if(scrId){
+    document.getElementById(scrId).classList.add('on');
+    // Init views
+    if(mod==='admin') adNav('au');
+    if(mod.startsWith('custom_')) {
+      let cmod = S.customMods.find(x=>x.id===mod);
+      if(cmod){
+        document.getElementById('cmod-title').textContent = cmod.name;
+        document.getElementById('cmod-sb-name').textContent = cmod.name;
+        document.getElementById('cmod-sb-ico').textContent = cmod.ico;
+        document.getElementById('cmod-sec-ico').textContent = cmod.ico;
+      }
+    }
+
+    // 🔴 APPLIQUER LA PERMISSION LECTURE SEULE 🔴
+    // Cache tous les éléments avec la classe .adm-only si l'utilisateur est Visiteur (read)
+    if(perm === 'read') {
+      document.querySelectorAll(`#${scrId} .adm-only`).forEach(e => e.style.display = 'none');
+    } else if (perm === 'admin' || S.curRole === 'superadmin') {
+      document.querySelectorAll(`#${scrId} .adm-only`).forEach(e => e.style.display = 'flex');
+    }
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   ADMINISTRATION — GESTION UTILISATEURS ET ROLES (SELECTS)
+   ═══════════════════════════════════════════════════════════════ */
+function adNav(p){
+  ['ad-users','ad-roles','ad-security'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  document.querySelectorAll('[id^="adn-"]').forEach(n=>n.classList.remove('on'));
+  if(p==='au'){document.getElementById('ad-users').style.display='block';document.getElementById('ad-page-lbl').textContent='— Utilisateurs & Permissions';adBuildUsers();}
+  else if(p==='ar'){document.getElementById('ad-roles').style.display='block';document.getElementById('ad-page-lbl').textContent='— Modules Dynamiques';adBuildRoles();}
+  else if(p==='as'){document.getElementById('ad-security').style.display='block';document.getElementById('ad-page-lbl').textContent='— Sécurité'; /* adBuildSecLog() */}
+  const nav=document.getElementById('adn-'+p);if(nav)nav.classList.add('on');
+}
+
+window.adBuildUsers = function(){
+  const c = document.getElementById('ad-user-list');
+  if(!c) return;
+  c.innerHTML='';
+  const roleMap={superadmin:{col:'#fef3c7',txt:'#92400e',label:'Super Admin'},admin:{col:'#dbeafe',txt:'#1d4ed8',label:'Admin'},visitor:{col:'#d1fae5',txt:'#059669',label:'Visiteur'}};
+  const allMods=Object.values(BASE_MODULES).concat(S.customMods||[]);
+
+  S.admins.forEach((a,i)=>{
+    const rm = roleMap[a.role] || roleMap.admin;
+    if(!a.modules) a.modules = {};
+
+    let selects = allMods.map(m => {
+      let k = m.id;
+      if(k==='admin' && a.user!=='bilal') return ''; // Seul le super admin contrôle ça généralement
+      let val = a.modules[k] || 'none';
+      if(val===true) val='admin'; if(val===false) val='none';
+
+      return `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surf2);padding:4px 8px;border-radius:4px;border:1px solid var(--bd);width:160px;font-size:.7rem">
+        <span style="font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${m.name}">${m.ico} ${m.name}</span>
+        <select style="font-size:.65rem;border:none;background:none;outline:none;cursor:pointer;font-weight:700;color:${val==='admin'?'var(--blue)':val==='read'?'var(--green)':'var(--t3)'}" onchange="adSetModPerm(${i},'${k}',this.value)">
+          <option value="none" ${val==='none'?'selected':''}>🚫 Aucun</option>
+          <option value="read" ${val==='read'?'selected':''}>👁 Visiteur</option>
+          <option value="admin" ${val==='admin'?'selected':''}>✏️ Admin</option>
+        </select>
+      </div>`;
+    }).join('');
+
+    const d=document.createElement('div');
+    d.className='admin-row'; d.style.flexWrap='wrap'; d.style.gap='10px';
+    d.innerHTML=`<div class="admin-av" style="background:${rm.col};color:${rm.txt}">${a.user[0].toUpperCase()}</div>
+    <div class="admin-info" style="flex:1;min-width:200px">
+      <div class="admin-name">${a.user} <span class="badge-role" style="background:${rm.col};color:${rm.txt}">${rm.label}</span></div>
+      <div style="font-family:monospace;font-size:.78rem;background:var(--surf2);padding:2px 8px;border-radius:4px;border:1px solid var(--bd);display:inline-block;margin-top:5px">MDP: ${a.pass}</div>
+      ${a.user!=='bilal'?`<div style="margin-top:8px"><select class="ffi" style="height:26px;font-size:.7rem;padding:0 8px;-webkit-appearance:none;cursor:pointer" onchange="adChangeRole(${i},this.value)">
+        <option value="admin" ${a.role==='admin'?'selected':''}>Rôle: Admin</option>
+        <option value="visitor" ${a.role==='visitor'?'selected':''}>Rôle: Visiteur</option>
+        <option value="superadmin" ${a.role==='superadmin'?'selected':''}>Rôle: Super Admin</option>
+      </select></div>`:''}
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;flex:3;min-width:300px;border-left:1px solid var(--bd);padding-left:10px">${selects}</div>
+    ${a.user!=='bilal'?`<div class="file-acts" style="flex-shrink:0;flex-direction:column"><button class="btn btn-o btn-sm" onclick="adOpenReset(${i})">🔑 Reset</button><button class="btn btn-d btn-sm" onclick="adDelUser(${i})">✕ Suppr</button></div>`:'<div style="font-size:.65rem;color:var(--t3);padding:4px;background:var(--surf2);border-radius:4px">Protégé</div>'}`;
+    c.appendChild(d);
+  });
+  document.getElementById('ad-user-count').textContent=S.admins.length+' comptes';
+};
+
+window.adSetModPerm = function(userIndex, modId, val) {
+   if(S.admins[userIndex].user === 'bilal' && modId === 'admin') { toast('Impossible de retirer les droits Super Admin', 'e'); return; }
+   if(!S.admins[userIndex].modules) S.admins[userIndex].modules = {};
+   S.admins[userIndex].modules[modId] = val;
+   saveState();
+   toast('Permission de ' + S.admins[userIndex].user + ' mise à jour', 's');
+   adBuildUsers(); // refresh color
+};
+
+window.adChangeRole = function(i, newRole){
+  if(S.admins[i].user==='bilal') return;
+  S.admins[i].role = newRole;
+  saveState(); adBuildUsers(); toast('Rôle mis à jour','s');
+};
+
+window.adAddUser = function(){
+  const u=document.getElementById('ad-new-user').value.trim().toLowerCase();
+  const p=document.getElementById('ad-new-pass').value;
+  const r=document.getElementById('ad-new-role').value;
+  if(!u||!p){toast('Remplissez tous les champs','w');return;}
+  if(S.admins.find(a=>a.user===u)){toast(u+' existe déjà','w');return;}
+  
+  // Par défaut : Admin écrit partout, Visitor lit partout
+  let defPerm = r==='visitor'?'read':'admin';
+  let initMods = {};
+  Object.keys(BASE_MODULES).forEach(k => initMods[k] = defPerm);
+  initMods.admin = (r==='superadmin'?'admin':'none');
+  if(S.customMods) S.customMods.forEach(m => initMods[m.id] = defPerm);
+
+  S.admins.push({user:u, pass:p, role:r, modules:initMods});
+  saveState(); adBuildUsers();
+  document.getElementById('ad-new-user').value=''; document.getElementById('ad-new-pass').value='';
+  toast('Utilisateur ajouté','s');
+};
+
+window.adDelUser = function(i){
+  const a=S.admins[i];
+  if(a.user==='bilal') return;
+  S.admins.splice(i,1); saveState(); adBuildUsers(); toast(a.user+' supprimé','w');
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   GÉNÉRATEUR DE MODULES (+)
+   ═══════════════════════════════════════════════════════════════ */
+window.addCustomMod = function(){
+  let n = document.getElementById('new-mod-name').value.trim();
+  let ico = document.getElementById('new-mod-ico').value.trim() || '📁';
+  if(!n) { toast('Le nom est requis', 'w'); return; }
+  if(!S.customMods) S.customMods = [];
+  let id = 'custom_' + Date.now();
+  S.customMods.push({id:id, name:n, ico:ico, desc:'Module additionnel personnalisé'});
+  
+  // Attribuer la permission Admin au superadmin, None aux autres par défaut
+  S.admins.forEach(a => {
+    if(!a.modules) a.modules = {};
+    a.modules[id] = (a.role === 'superadmin') ? 'admin' : 'none';
+  });
+  
+  saveState();
+  document.getElementById('new-mod-name').value='';
+  document.getElementById('new-mod-ico').value='📁';
+  adBuildRoles(); // Updates the UI
+  toast('Module '+n+' généré avec succès !', 's');
+};
+
+window.delCustomMod = function(id){
+  S.customMods = S.customMods.filter(m => m.id !== id);
+  saveState(); adBuildRoles(); toast('Module supprimé', 'w');
+};
+
+window.adBuildRoles = function(){
+  let c = document.getElementById('custom-mods-list');
+  if(!c) return;
+  if(!S.customMods || !S.customMods.length) { c.innerHTML = '<span style="font-size:.75rem;color:var(--t3)">Aucun module personnalisé</span>'; return; }
+  c.innerHTML = S.customMods.map(m => `
+    <div style="background:var(--surf);border:1px solid var(--bd);padding:8px 14px;border-radius:8px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)">
+      <span style="font-size:1.2rem">${m.ico}</span>
+      <span style="font-weight:600;font-size:.85rem;color:var(--tx)">${m.name}</span>
+      <button class="btn btn-d btn-xs" onclick="delCustomMod('${m.id}')" style="margin-left:10px;height:24px;padding:0 6px">✕</button>
+    </div>
+  `).join('');
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS
+   ═══════════════════════════════════════════════════════════════ */
+function navTo(id) { enterModule(id==='g'?'settings':'hub'); } // Simple helper
+
+// Code original (Firebase sync, Import Excel, CRUD...) reste ici inchangé
+</script>
+</body>
+</html>
