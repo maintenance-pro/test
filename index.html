@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="LEONI Wiring Systems — Bon d'Intervention Sertissage & Validation Laboratoire" />
+  <meta name="theme-color" content="#0a0e1a" />
+  <title>LEONI · Bon d'Intervention Sertissage</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="app" data-theme="dark">
+
+  <!-- ===================================================================== -->
+  <!-- VIEW 1 — LOGIN                                                        -->
+  <!-- ===================================================================== -->
+  <section class="login" id="view-login" data-view="login" aria-label="Connexion">
+    <div class="login__backdrop" aria-hidden="true"></div>
+
+    <div class="login__card">
+      <header class="login__header">
+        <div class="login__logo">LEONI</div>
+        <h1 class="login__title">Bon d'Intervention Sertissage</h1>
+        <p class="login__subtitle">Coordination Crimping &times; Laboratoire</p>
+      </header>
+
+      <form class="login__form" id="form-login" autocomplete="on" novalidate>
+        <div class="login__field">
+          <label class="login__label" for="login-email">Adresse e-mail ou matricule</label>
+          <input class="login__input" id="login-email" name="email" type="text" required autocomplete="username" />
+        </div>
+
+        <div class="login__field">
+          <label class="login__label" for="login-password">Mot de passe</label>
+          <input class="login__input" id="login-password" name="password" type="password" required autocomplete="current-password" />
+          <button class="login__toggle-pass" type="button" id="btn-toggle-pass" aria-label="Afficher le mot de passe">👁</button>
+        </div>
+
+        <div class="login__row">
+          <label class="login__remember">
+            <input type="checkbox" id="login-remember" name="remember" />
+            <span>Se souvenir de moi</span>
+          </label>
+          <a class="login__forgot" href="#" id="link-forgot">Mot de passe oublié&nbsp;?</a>
+        </div>
+
+        <button class="login__submit" type="submit" id="btn-login">Se connecter</button>
+        <p class="login__error" id="login-error" hidden></p>
+      </form>
+
+      <footer class="login__footer">
+        <span class="login__version">v1.0.0</span>
+        <span class="login__copy">© LEONI Wiring Systems · Maintenance</span>
+      </footer>
+    </div>
+  </section>
+
+
+  <!-- ===================================================================== -->
+  <!-- APP SHELL (visible après login)                                       -->
+  <!-- ===================================================================== -->
+  <div class="shell" id="shell" hidden>
+
+    <!-- ============== TOP BAR ============== -->
+    <header class="topbar" id="topbar">
+      <button class="topbar__menu" id="btn-menu" aria-label="Ouvrir le menu">☰</button>
+
+      <a class="topbar__brand" href="#hub">
+        <span class="topbar__brand-logo">LEONI</span>
+        <span class="topbar__brand-sep">·</span>
+        <span class="topbar__brand-title">Sertissage Lab</span>
+      </a>
+
+      <div class="topbar__search">
+        <input class="topbar__search-input" id="global-search" type="search" placeholder="Rechercher un bon, un outil, un technicien…" />
+      </div>
+
+      <div class="topbar__actions">
+        <button class="topbar__btn topbar__btn--quick" id="btn-quick-new" title="Nouveau bon (N)">＋ Nouveau bon</button>
+
+        <button class="topbar__btn topbar__btn--icon" id="btn-notifications" aria-label="Notifications">
+          🔔
+          <span class="topbar__badge" id="notif-badge" hidden>0</span>
+        </button>
+
+        <button class="topbar__btn topbar__btn--icon" id="btn-theme" aria-label="Changer le thème">◐</button>
+
+        <div class="topbar__user" id="user-menu">
+          <button class="topbar__user-btn" id="btn-user">
+            <span class="topbar__user-avatar" id="user-avatar">B</span>
+            <span class="topbar__user-name" id="user-name">—</span>
+            <span class="topbar__user-role" id="user-role">—</span>
+          </button>
+          <ul class="topbar__user-dropdown" id="user-dropdown" hidden>
+            <li><button data-action="profile">Mon profil</button></li>
+            <li><button data-action="password">Changer mot de passe</button></li>
+            <li><hr /></li>
+            <li><button data-action="logout">Se déconnecter</button></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============== SIDEBAR ============== -->
+    <aside class="sidebar" id="sidebar">
+      <nav class="sidebar__nav" aria-label="Navigation principale">
+        <ul class="sidebar__list">
+          <li class="sidebar__item">
+            <button class="sidebar__link sidebar__link--active" data-nav="hub">
+              <span class="sidebar__icon">🏠</span><span class="sidebar__label">Hub</span>
+            </button>
+          </li>
+          <li class="sidebar__item">
+            <button class="sidebar__link" data-nav="intervention">
+              <span class="sidebar__icon">📝</span><span class="sidebar__label">Bon d'intervention</span>
+            </button>
+          </li>
+          <li class="sidebar__item">
+            <button class="sidebar__link" data-nav="history">
+              <span class="sidebar__icon">📋</span><span class="sidebar__label">Historique</span>
+              <span class="sidebar__pill" id="nav-history-count">0</span>
+            </button>
+          </li>
+          <li class="sidebar__item">
+            <button class="sidebar__link" data-nav="queue">
+              <span class="sidebar__icon">⏳</span><span class="sidebar__label">File d'attente</span>
+              <span class="sidebar__pill sidebar__pill--warn" id="nav-queue-count">0</span>
+            </button>
+          </li>
+          <li class="sidebar__item">
+            <button class="sidebar__link" data-nav="catalog">
+              <span class="sidebar__icon">🛠</span><span class="sidebar__label">Catalogue outils</span>
+            </button>
+          </li>
+          <li class="sidebar__item sidebar__item--admin" data-requires-role="responsable,super_admin">
+            <button class="sidebar__link" data-nav="users">
+              <span class="sidebar__icon">👥</span><span class="sidebar__label">Utilisateurs</span>
+            </button>
+          </li>
+          <li class="sidebar__item sidebar__item--admin" data-requires-role="responsable,super_admin">
+            <button class="sidebar__link" data-nav="stats">
+              <span class="sidebar__icon">📊</span><span class="sidebar__label">Statistiques & SLA</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <footer class="sidebar__footer">
+        <div class="sidebar__sync" id="sync-status">
+          <span class="sidebar__sync-dot"></span>
+          <span class="sidebar__sync-label">En ligne</span>
+        </div>
+      </footer>
+    </aside>
+
+    <!-- ============== MAIN ============== -->
+    <main class="main" id="main">
+
+      <!-- ================================================================= -->
+      <!-- VIEW 2 — HUB / DASHBOARD                                          -->
+      <!-- ================================================================= -->
+      <section class="hub" id="view-hub" data-view="hub">
+        <header class="hub__header">
+          <h1 class="hub__title">Tableau de bord</h1>
+          <p class="hub__greeting" id="hub-greeting">Bienvenue —</p>
+        </header>
+
+        <div class="hub__kpis" id="hub-kpis">
+          <article class="kpi kpi--primary">
+            <div class="kpi__icon">📝</div>
+            <div class="kpi__body">
+              <div class="kpi__label">Bons ce mois</div>
+              <div class="kpi__value" id="kpi-month">—</div>
+              <div class="kpi__delta" id="kpi-month-delta">—</div>
+            </div>
+          </article>
+
+          <article class="kpi kpi--warn">
+            <div class="kpi__icon">⏳</div>
+            <div class="kpi__body">
+              <div class="kpi__label">En attente labo</div>
+              <div class="kpi__value" id="kpi-pending">—</div>
+              <div class="kpi__delta">à valider</div>
+            </div>
+          </article>
+
+          <article class="kpi kpi--success">
+            <div class="kpi__icon">✅</div>
+            <div class="kpi__body">
+              <div class="kpi__label">Validés (mois)</div>
+              <div class="kpi__value" id="kpi-validated">—</div>
+              <div class="kpi__delta" id="kpi-validated-rate">—</div>
+            </div>
+          </article>
+
+          <article class="kpi kpi--danger">
+            <div class="kpi__icon">⚠️</div>
+            <div class="kpi__body">
+              <div class="kpi__label">Refusés (mois)</div>
+              <div class="kpi__value" id="kpi-rejected">—</div>
+              <div class="kpi__delta">à corriger</div>
+            </div>
+          </article>
+
+          <article class="kpi kpi--info">
+            <div class="kpi__icon">⚡</div>
+            <div class="kpi__body">
+              <div class="kpi__label">SLA moyen validation</div>
+              <div class="kpi__value" id="kpi-sla">—</div>
+              <div class="kpi__delta">crimping → labo</div>
+            </div>
+          </article>
+        </div>
+
+        <div class="hub__grid">
+          <section class="card card--chart">
+            <header class="card__header">
+              <h2 class="card__title">Interventions / semaine</h2>
+              <select class="card__filter" id="chart-period">
+                <option value="4">4 dernières semaines</option>
+                <option value="12" selected>12 dernières semaines</option>
+                <option value="26">26 dernières semaines</option>
+              </select>
+            </header>
+            <div class="card__body">
+              <canvas class="chart" id="chart-weekly" aria-label="Graphique interventions par semaine"></canvas>
+            </div>
+          </section>
+
+          <section class="card card--list">
+            <header class="card__header">
+              <h2 class="card__title">À valider en urgence</h2>
+              <button class="card__see-all" data-nav="queue">Voir tout →</button>
+            </header>
+            <ul class="queue" id="queue-list">
+              <!-- items injectés dynamiquement -->
+            </ul>
+          </section>
+
+          <section class="card card--list">
+            <header class="card__header">
+              <h2 class="card__title">Top 5 outils maintenus</h2>
+            </header>
+            <ul class="toplist" id="top-tools-list"></ul>
+          </section>
+
+          <section class="card card--list">
+            <header class="card__header">
+              <h2 class="card__title">Dernières activités</h2>
+            </header>
+            <ul class="activity" id="activity-feed"></ul>
+          </section>
+        </div>
+      </section>
+
+
+      <!-- ================================================================= -->
+      <!-- VIEW 3 — BON D'INTERVENTION (cœur de l'app)                       -->
+      <!-- ================================================================= -->
+      <section class="intervention" id="view-intervention" data-view="intervention" hidden>
+
+        <!-- ===== Header / status bar ===== -->
+        <header class="intervention__header">
+          <div class="intervention__title-block">
+            <button class="intervention__back" id="btn-int-back" aria-label="Retour">←</button>
+            <div>
+              <h1 class="intervention__title">Bon d'intervention</h1>
+              <p class="intervention__subtitle">
+                N° <span class="intervention__num" id="int-num">—</span>
+                · créé le <span id="int-created">—</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="intervention__status" id="int-status">
+            <span class="status-pill status-pill--draft" data-status="draft">Brouillon</span>
+            <span class="status-pill status-pill--submitted" data-status="submitted" hidden>En attente labo</span>
+            <span class="status-pill status-pill--validated" data-status="validated" hidden>Validé</span>
+            <span class="status-pill status-pill--rejected" data-status="rejected" hidden>Refusé</span>
+            <span class="status-pill status-pill--cancelled" data-status="cancelled" hidden>Annulé</span>
+          </div>
+
+          <div class="intervention__qr">
+            <canvas id="int-qrcode" width="80" height="80" aria-label="QR Code du bon"></canvas>
+          </div>
+        </header>
+
+        <!-- ===== Workflow stepper ===== -->
+        <ol class="stepper" id="int-stepper" aria-label="Workflow">
+          <li class="stepper__step stepper__step--active" data-step="draft">
+            <span class="stepper__num">1</span>
+            <span class="stepper__label">Saisie crimping</span>
+          </li>
+          <li class="stepper__step" data-step="submitted">
+            <span class="stepper__num">2</span>
+            <span class="stepper__label">Soumission</span>
+          </li>
+          <li class="stepper__step" data-step="lab">
+            <span class="stepper__num">3</span>
+            <span class="stepper__label">Validation labo</span>
+          </li>
+          <li class="stepper__step" data-step="done">
+            <span class="stepper__num">4</span>
+            <span class="stepper__label">Clôturé</span>
+          </li>
+        </ol>
+
+        <!-- ===== Form ===== -->
+        <form class="intervention__form" id="form-intervention" novalidate>
+
+          <!-- ============================================================= -->
+          <!-- SECTION A — Identification de l'outil                          -->
+          <!-- ============================================================= -->
+          <fieldset class="intervention__section intervention__section--tool">
+            <legend class="intervention__legend">🛠 Outil concerné</legend>
+
+            <div class="intervention__grid intervention__grid--3">
+              <div class="field">
+                <label class="field__label" for="int-tool-search">Référence outil</label>
+                <input class="field__input" id="int-tool-search" name="toolSearch" type="text" list="datalist-tools" placeholder="Ex: 2158S" required />
+                <datalist id="datalist-tools"></datalist>
+              </div>
+
+              <div class="field">
+                <label class="field__label" for="int-outil-id">OUTIL ID</label>
+                <input class="field__input" id="int-outil-id" name="outilId" type="text" placeholder="WZ2158*-4s" required />
+              </div>
+
+              <div class="field">
+                <label class="field__label" for="int-fabricant">Fabricant</label>
+                <input class="field__input" id="int-fabricant" name="fabricant" type="text" readonly />
+              </div>
+            </div>
+
+            <!-- Fiche technique auto-remplie -->
+            <aside class="tool-card" id="int-tool-card">
+              <header class="tool-card__header">
+                <span class="tool-card__icon">⚙</span>
+                <h3 class="tool-card__title">Fiche technique</h3>
+                <span class="tool-card__cycle" id="tool-cycle">— cycles</span>
+              </header>
+              <dl class="tool-card__list">
+                <div class="tool-card__row">
+                  <dt>Réf. fabricant</dt><dd id="tc-ref-fab">—</dd>
+                </div>
+                <div class="tool-card__row">
+                  <dt>P-AR</dt><dd id="tc-par">—</dd>
+                </div>
+                <div class="tool-card__row">
+                  <dt>P-AV</dt><dd id="tc-pav">—</dd>
+                </div>
+                <div class="tool-card__row">
+                  <dt>E-AR</dt><dd id="tc-ear">—</dd>
+                </div>
+                <div class="tool-card__row">
+                  <dt>E-AV</dt><dd id="tc-eav">—</dd>
+                </div>
+              </dl>
+            </aside>
+          </fieldset>
+
+          <!-- ============================================================= -->
+          <!-- SECTION B — Partie CRIMPING (technicien maintenance)           -->
+          <!-- ============================================================= -->
+          <fieldset class="intervention__section intervention__section--crimping" id="section-crimping">
+            <legend class="intervention__legend">
+              <span class="intervention__legend-num">1</span>
+              🔧 Partie Crimping — Technicien maintenance
+            </legend>
+
+            <div class="intervention__grid intervention__grid--3">
+              <div class="field">
+                <label class="field__label" for="int-date">Date intervention</label>
+                <input class="field__input" id="int-date" name="date" type="date" required />
+              </div>
+
+              <div class="field">
+                <label class="field__label" for="int-cycles">Cycles compteur</label>
+                <input class="field__input" id="int-cycles" name="cycles" type="number" min="0" inputmode="numeric" required />
+                <button class="field__addon" type="button" id="btn-photo-cycles" title="Prendre photo du compteur">📷</button>
+              </div>
+
+              <div class="field">
+                <label class="field__label" for="int-type">Type d'intervention</label>
+                <select class="field__input" id="int-type" name="type" required>
+                  <option value="">— Choisir —</option>
+                  <option value="preventive">Préventive</option>
+                  <option value="curative">Curative</option>
+                  <option value="requalification">Requalification</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field field--full">
+              <label class="field__label">Pièces changées</label>
+              <div class="checkbox-group" id="pieces-group">
+                <label class="checkbox"><input type="checkbox" name="piece" value="pAr" /><span>P-AR · Poinçon Arrière</span></label>
+                <label class="checkbox"><input type="checkbox" name="piece" value="pAv" /><span>P-AV · Poinçon Avant</span></label>
+                <label class="checkbox"><input type="checkbox" name="piece" value="eAr" /><span>E-AR · Enclume Arrière</span></label>
+                <label class="checkbox"><input type="checkbox" name="piece" value="eAv" /><span>E-AV · Enclume Avant</span></label>
+                <label class="checkbox"><input type="checkbox" name="piece" value="ejector" /><span>Ejector</span></label>
+                <label class="checkbox"><input type="checkbox" name="piece" value="couteauBanda" /><span>Couteau / Banda</span></label>
+              </div>
+            </div>
+
+            <div class="field field--full">
+              <label class="field__label" for="int-observation">Observation</label>
+              <textarea class="field__input field__input--area" id="int-observation" name="observation" rows="4" maxlength="1000" placeholder="Ex: Requalification + bon n° 410034"></textarea>
+              <span class="field__counter" id="obs-counter">0 / 1000</span>
+            </div>
+
+            <div class="field field--full">
+              <label class="field__label">Photo compteur (optionnelle)</label>
+              <div class="upload" id="upload-cycles">
+                <input type="file" id="file-cycles" accept="image/*" capture="environment" hidden />
+                <button class="upload__btn" type="button" data-target="file-cycles">📷 Ajouter une photo</button>
+                <div class="upload__preview" id="preview-cycles"></div>
+              </div>
+            </div>
+
+            <div class="field field--full">
+              <label class="field__label">Signature crimping</label>
+              <div class="signature" id="sign-crimp">
+                <canvas class="signature__pad" id="sign-crimp-pad" width="600" height="160"></canvas>
+                <div class="signature__actions">
+                  <button type="button" class="btn btn--ghost" id="btn-sign-crimp-clear">Effacer</button>
+                  <span class="signature__name" id="sign-crimp-name">—</span>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- ============================================================= -->
+          <!-- SECTION C — Partie LABO (technicien laboratoire)               -->
+          <!-- ============================================================= -->
+          <fieldset class="intervention__section intervention__section--lab" id="section-lab" disabled>
+            <legend class="intervention__legend">
+              <span class="intervention__legend-num">2</span>
+              🧪 Partie Laboratoire — Validation
+            </legend>
+
+            <!-- Connexion -->
+            <div class="intervention__subsection">
+              <h3 class="intervention__sub-title">Cordon testé</h3>
+              <div class="intervention__grid intervention__grid--3">
+                <div class="field">
+                  <label class="field__label" for="lab-ref-connexion">Réf. connexion</label>
+                  <input class="field__input" id="lab-ref-connexion" name="refConnexion" type="text" />
+                </div>
+                <div class="field">
+                  <label class="field__label" for="lab-section-cable">Section câble</label>
+                  <input class="field__input" id="lab-section-cable" name="sectionCable" type="text" placeholder="Ex: 0,35 IR" />
+                </div>
+                <div class="field">
+                  <label class="field__label" for="lab-indice">Indice paramétrique</label>
+                  <input class="field__input" id="lab-indice" name="indiceParametrique" type="text" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Mesures -->
+            <div class="intervention__subsection">
+              <h3 class="intervention__sub-title">Mesures dimensionnelles</h3>
+              <div class="intervention__grid intervention__grid--2">
+                <div class="field">
+                  <label class="field__label" for="lab-largeur-ame">Largeur âme</label>
+                  <input class="field__input" id="lab-largeur-ame" name="largeurAme" type="number" step="0.001" />
+                </div>
+                <div class="field">
+                  <label class="field__label" for="lab-largeur-isolant">Largeur isolant</label>
+                  <input class="field__input" id="lab-largeur-isolant" name="largeurIsolant" type="number" step="0.001" />
+                </div>
+              </div>
+
+              <table class="measure-table">
+                <caption class="measure-table__caption">5 mesures successives</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Hauteur isolant</th>
+                    <th scope="col">Effort</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">1</th>
+                    <td><input class="measure-table__input" name="hi1" type="number" step="0.001" /></td>
+                    <td><input class="measure-table__input" name="ef1" type="number" step="0.01" /></td>
+                  </tr>
+                  <tr><th scope="row">2</th>
+                    <td><input class="measure-table__input" name="hi2" type="number" step="0.001" /></td>
+                    <td><input class="measure-table__input" name="ef2" type="number" step="0.01" /></td>
+                  </tr>
+                  <tr><th scope="row">3</th>
+                    <td><input class="measure-table__input" name="hi3" type="number" step="0.001" /></td>
+                    <td><input class="measure-table__input" name="ef3" type="number" step="0.01" /></td>
+                  </tr>
+                  <tr><th scope="row">4</th>
+                    <td><input class="measure-table__input" name="hi4" type="number" step="0.001" /></td>
+                    <td><input class="measure-table__input" name="ef4" type="number" step="0.01" /></td>
+                  </tr>
+                  <tr><th scope="row">5</th>
+                    <td><input class="measure-table__input" name="hi5" type="number" step="0.001" /></td>
+                    <td><input class="measure-table__input" name="ef5" type="number" step="0.01" /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Capabilité (calculé auto) -->
+            <div class="intervention__subsection">
+              <h3 class="intervention__sub-title">Capabilité <span class="badge badge--auto">Calcul auto</span></h3>
+              <div class="intervention__grid intervention__grid--4">
+                <div class="field field--readonly">
+                  <label class="field__label">Hauteur âme moy.</label>
+                  <output class="field__output" id="capa-ame-moy">—</output>
+                </div>
+                <div class="field field--readonly">
+                  <label class="field__label">Cm âme</label>
+                  <output class="field__output" id="capa-cm">—</output>
+                </div>
+                <div class="field field--readonly">
+                  <label class="field__label">Cmk âme</label>
+                  <output class="field__output" id="capa-cmk">—</output>
+                </div>
+                <div class="field field--readonly">
+                  <label class="field__label">Cm effort</label>
+                  <output class="field__output" id="capa-cm-effort">—</output>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field__label" for="lab-chute-tension">Chute tension (mV)</label>
+                <input class="field__input" id="lab-chute-tension" name="chuteTension" type="number" step="0.01" />
+              </div>
+            </div>
+
+            <!-- Conformités -->
+            <div class="intervention__subsection">
+              <h3 class="intervention__sub-title">Conformités</h3>
+              <div class="checkbox-group checkbox-group--lab">
+                <label class="checkbox"><input type="checkbox" name="conf" value="chanfrein" /><span>Conformité chanfrein</span></label>
+                <label class="checkbox"><input type="checkbox" name="conf" value="temoinCoupe" /><span>Conformité témoin coupe</span></label>
+                <label class="checkbox"><input type="checkbox" name="conf" value="flexion" /><span>Conformité flexion</span></label>
+              </div>
+            </div>
+
+            <!-- Coupe métallographique -->
+            <div class="intervention__subsection">
+              <h3 class="intervention__sub-title">Coupe métallographique</h3>
+              <div class="upload" id="upload-coupe">
+                <input type="file" id="file-coupe" accept="application/pdf,image/*" hidden />
+                <button class="upload__btn" type="button" data-target="file-coupe">📎 Joindre PDF / image</button>
+                <div class="upload__preview" id="preview-coupe"></div>
+                <a class="upload__link" id="link-coupe" href="#" hidden target="_blank" rel="noopener">Voir le fichier</a>
+              </div>
+            </div>
+
+            <!-- Décision labo -->
+            <div class="intervention__subsection intervention__subsection--decision">
+              <h3 class="intervention__sub-title">Décision laboratoire</h3>
+              <div class="decision">
+                <button class="decision__btn decision__btn--validate" type="button" id="btn-validate">
+                  ✅ Valider le bon
+                </button>
+                <button class="decision__btn decision__btn--reject" type="button" id="btn-reject">
+                  ❌ Refuser & renvoyer au crimping
+                </button>
+              </div>
+
+              <div class="field field--full">
+                <label class="field__label">Signature labo</label>
+                <div class="signature" id="sign-lab">
+                  <canvas class="signature__pad" id="sign-lab-pad" width="600" height="160"></canvas>
+                  <div class="signature__actions">
+                    <button type="button" class="btn btn--ghost" id="btn-sign-lab-clear">Effacer</button>
+                    <span class="signature__name" id="sign-lab-name">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- ============================================================= -->
+          <!-- HISTORIQUE DES STATUTS                                         -->
+          <!-- ============================================================= -->
+          <section class="intervention__section intervention__section--history">
+            <h3 class="intervention__sub-title">Historique du bon</h3>
+            <ol class="timeline" id="int-timeline">
+              <!-- entries injectées dynamiquement -->
+            </ol>
+          </section>
+
+          <!-- ============================================================= -->
+          <!-- BARRE D'ACTIONS STICKY                                         -->
+          <!-- ============================================================= -->
+          <footer class="intervention__actions" id="int-actions">
+            <div class="intervention__actions-left">
+              <button type="button" class="btn btn--ghost" id="btn-int-prev" title="Précédent">⏮</button>
+              <button type="button" class="btn btn--ghost" id="btn-int-next" title="Suivant">⏭</button>
+              <span class="intervention__counter" id="int-counter">— / —</span>
+            </div>
+
+            <div class="intervention__actions-right">
+              <button type="button" class="btn btn--ghost" id="btn-int-print">🖨 Imprimer A4</button>
+              <button type="button" class="btn btn--ghost" id="btn-int-export">📤 Export PDF</button>
+              <button type="button" class="btn btn--danger btn--ghost" id="btn-int-delete" data-requires-role="responsable,super_admin">🗑 Supprimer</button>
+              <button type="button" class="btn btn--secondary" id="btn-int-save">💾 Enregistrer brouillon</button>
+              <button type="submit" class="btn btn--primary" id="btn-int-submit">📨 Soumettre au labo</button>
+            </div>
+          </footer>
+        </form>
+      </section>
+
+
+      <!-- ================================================================= -->
+      <!-- VIEW 4 — HISTORIQUE / SUIVI DES MAINTENANCES                      -->
+      <!-- ================================================================= -->
+      <section class="history" id="view-history" data-view="history" hidden>
+        <header class="history__header">
+          <h1 class="history__title">Suivi des maintenances</h1>
+          <p class="history__subtitle">Validation des outils de sertissage</p>
+        </header>
+
+        <div class="history__filters" id="history-filters">
+          <div class="filter">
+            <label class="filter__label" for="filter-tool">Outil</label>
+            <input class="filter__input" id="filter-tool" type="text" list="datalist-tools" placeholder="Tous les outils" />
+          </div>
+
+          <div class="filter">
+            <label class="filter__label" for="filter-from">Du</label>
+            <input class="filter__input" id="filter-from" type="date" />
+          </div>
+
+          <div class="filter">
+            <label class="filter__label" for="filter-to">Au</label>
+            <input class="filter__input" id="filter-to" type="date" />
+          </div>
+
+          <div class="filter">
+            <label class="filter__label" for="filter-type">Type</label>
+            <select class="filter__input" id="filter-type">
+              <option value="">Tous</option>
+              <option value="preventive">Préventive</option>
+              <option value="curative">Curative</option>
+              <option value="requalification">Requalification</option>
+            </select>
+          </div>
+
+          <div class="filter">
+            <label class="filter__label" for="filter-status">Statut</label>
+            <select class="filter__input" id="filter-status">
+              <option value="">Tous</option>
+              <option value="draft">Brouillon</option>
+              <option value="submitted">En attente</option>
+              <option value="validated">Validé</option>
+              <option value="rejected">Refusé</option>
+            </select>
+          </div>
+
+          <div class="filter">
+            <label class="filter__label" for="filter-tech">Technicien</label>
+            <input class="filter__input" id="filter-tech" type="text" />
+          </div>
+
+          <div class="filter filter--actions">
+            <button class="btn btn--ghost" id="btn-filter-reset">Réinitialiser</button>
+            <button class="btn btn--secondary" id="btn-filter-export">📤 Excel</button>
+            <button class="btn btn--secondary" id="btn-filter-print">🖨 Imprimer</button>
+          </div>
+        </div>
+
+        <div class="history__tablewrap">
+          <table class="data-table" id="history-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="check-all" /></th>
+                <th data-sort="numBon">N° Bon</th>
+                <th data-sort="outilId">Outil</th>
+                <th data-sort="date">Date</th>
+                <th data-sort="cycles">Cycles</th>
+                <th data-sort="type">Type</th>
+                <th>Observation</th>
+                <th>Coupe métallo</th>
+                <th data-sort="status">Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="history-body">
+              <!-- rows injected -->
+            </tbody>
+          </table>
+        </div>
+
+        <footer class="history__pagination">
+          <span class="history__total" id="history-total">— résultats</span>
+          <div class="history__pager">
+            <button class="btn btn--ghost" id="page-prev">←</button>
+            <span id="page-info">1 / 1</span>
+            <button class="btn btn--ghost" id="page-next">→</button>
+          </div>
+          <select class="history__pagesize" id="page-size">
+            <option value="25">25 / page</option>
+            <option value="50" selected>50 / page</option>
+            <option value="100">100 / page</option>
+            <option value="200">200 / page</option>
+          </select>
+        </footer>
+      </section>
+
+
+      <!-- ================================================================= -->
+      <!-- VIEW 5 — FILE D'ATTENTE (mes bons)                                -->
+      <!-- ================================================================= -->
+      <section class="queue-view" id="view-queue" data-view="queue" hidden>
+        <header class="queue-view__header">
+          <h1 class="queue-view__title">Ma file d'attente</h1>
+          <div class="queue-view__tabs" role="tablist">
+            <button class="tab tab--active" role="tab" data-tab="all">Tous</button>
+            <button class="tab" role="tab" data-tab="mine">Les miens</button>
+            <button class="tab" role="tab" data-tab="todo">À traiter</button>
+            <button class="tab" role="tab" data-tab="rejected">Refusés</button>
+          </div>
+        </header>
+
+        <div class="queue-view__list" id="queue-cards">
+          <!-- cartes injectées -->
+        </div>
+      </section>
+
+
+      <!-- ================================================================= -->
+      <!-- VIEW 6 — CATALOGUE OUTILS                                         -->
+      <!-- ================================================================= -->
+      <section class="catalog" id="view-catalog" data-view="catalog" hidden>
+        <header class="catalog__header">
+          <h1 class="catalog__title">Catalogue outils</h1>
+          <div class="catalog__actions">
+            <input class="catalog__search" id="catalog-search" type="search" placeholder="Rechercher un outil…" />
+            <button class="btn btn--secondary" id="btn-catalog-import">📥 Importer Excel</button>
+            <button class="btn btn--primary" id="btn-catalog-add" data-requires-role="responsable,super_admin">＋ Nouvel outil</button>
+          </div>
+        </header>
+
+        <div class="catalog__grid" id="catalog-grid">
+          <!-- cards injected -->
+        </div>
+      </section>
+
+
+      <!-- ================================================================= -->
+      <!-- VIEW 7 — UTILISATEURS (admin)                                     -->
+      <!-- ================================================================= -->
+      <section class="users-view" id="view-users" data-view="users" hidden>
+        <header class="users-view__header">
+          <h1 class="users-view__title">Gestion des utilisateurs</h1>
+          <button class="btn btn--primary" id="btn-user-add">＋ Nouvel utilisateur</button>
+        </header>
+
+        <table class="data-table" id="users-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Matricule</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Statut</th>
+              <th>Dernière connexion</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </section>
+
+
+      <!-- ================================================================= -->
+      <!-- VIEW 8 — STATISTIQUES & SLA                                       -->
+      <!-- ================================================================= -->
+      <section class="stats-view" id="view-stats" data-view="stats" hidden>
+        <header class="stats-view__header">
+          <h1 class="stats-view__title">Statistiques & SLA</h1>
+          <div class="stats-view__period">
+            <select id="stats-period">
+              <option value="7">7 jours</option>
+              <option value="30" selected>30 jours</option>
+              <option value="90">90 jours</option>
+              <option value="365">12 mois</option>
+            </select>
+          </div>
+        </header>
+
+        <div class="stats-view__grid">
+          <article class="card"><canvas id="chart-status-distribution"></canvas></article>
+          <article class="card"><canvas id="chart-sla-trend"></canvas></article>
+          <article class="card"><canvas id="chart-tools-ranking"></canvas></article>
+          <article class="card"><canvas id="chart-tech-performance"></canvas></article>
+        </div>
+      </section>
+
+    </main>
+
+
+    <!-- ============== NOTIFICATIONS PANEL ============== -->
+    <aside class="notif-panel" id="notif-panel" hidden>
+      <header class="notif-panel__header">
+        <h2>Notifications</h2>
+        <button id="btn-notif-clear">Tout marquer lu</button>
+        <button id="btn-notif-close" aria-label="Fermer">×</button>
+      </header>
+      <ul class="notif-panel__list" id="notif-list"></ul>
+    </aside>
+
+  </div>
+
+
+  <!-- ===================================================================== -->
+  <!-- MODALES                                                                -->
+  <!-- ===================================================================== -->
+
+  <!-- Modal: confirmation générique -->
+  <div class="modal" id="modal-confirm" role="dialog" aria-modal="true" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel">
+      <header class="modal__header">
+        <h2 class="modal__title" id="confirm-title">Confirmer</h2>
+        <button class="modal__close" data-close aria-label="Fermer">×</button>
+      </header>
+      <div class="modal__body">
+        <p id="confirm-message">Êtes-vous sûr ?</p>
+      </div>
+      <footer class="modal__footer">
+        <button class="btn btn--ghost" data-close>Annuler</button>
+        <button class="btn btn--primary" id="confirm-ok">Confirmer</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: refus avec motif -->
+  <div class="modal" id="modal-reject" role="dialog" aria-modal="true" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel">
+      <header class="modal__header">
+        <h2 class="modal__title">Refuser le bon</h2>
+        <button class="modal__close" data-close aria-label="Fermer">×</button>
+      </header>
+      <div class="modal__body">
+        <div class="field">
+          <label class="field__label" for="reject-reason">Motif du refus (obligatoire)</label>
+          <textarea class="field__input field__input--area" id="reject-reason" rows="4" required placeholder="Expliquez ce qui doit être corrigé par le crimping…"></textarea>
+        </div>
+      </div>
+      <footer class="modal__footer">
+        <button class="btn btn--ghost" data-close>Annuler</button>
+        <button class="btn btn--danger" id="btn-confirm-reject">Refuser & renvoyer</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: nouvel outil / édition outil -->
+  <div class="modal" id="modal-tool" role="dialog" aria-modal="true" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel modal__panel--lg">
+      <header class="modal__header">
+        <h2 class="modal__title" id="tool-modal-title">Nouvel outil</h2>
+        <button class="modal__close" data-close aria-label="Fermer">×</button>
+      </header>
+      <form class="modal__body" id="form-tool">
+        <div class="intervention__grid intervention__grid--2">
+          <div class="field"><label>Réf outil</label><input name="refOutil" required /></div>
+          <div class="field"><label>OUTIL ID</label><input name="outilId" required /></div>
+          <div class="field"><label>Fabricant</label><input name="fabricant" /></div>
+          <div class="field"><label>Réf fabricant</label><input name="refFabricant" /></div>
+          <div class="field"><label>P-AR</label><input name="pAr" /></div>
+          <div class="field"><label>P-AV</label><input name="pAv" /></div>
+          <div class="field"><label>E-AR</label><input name="eAr" /></div>
+          <div class="field"><label>E-AV</label><input name="eAv" /></div>
+          <div class="field"><label>Fréquence cycle</label><input name="frequenceCycle" type="number" /></div>
+        </div>
+      </form>
+      <footer class="modal__footer">
+        <button class="btn btn--ghost" data-close>Annuler</button>
+        <button class="btn btn--primary" id="btn-tool-save">Enregistrer</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: nouvel utilisateur -->
+  <div class="modal" id="modal-user" role="dialog" aria-modal="true" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel">
+      <header class="modal__header">
+        <h2 class="modal__title">Nouvel utilisateur</h2>
+        <button class="modal__close" data-close>×</button>
+      </header>
+      <form class="modal__body" id="form-user">
+        <div class="field"><label>Nom complet</label><input name="displayName" required /></div>
+        <div class="field"><label>Matricule</label><input name="matricule" required /></div>
+        <div class="field"><label>Email</label><input name="email" type="email" required /></div>
+        <div class="field">
+          <label>Rôle</label>
+          <select name="role" required>
+            <option value="crimping">Technicien Crimping</option>
+            <option value="labo">Technicien Labo</option>
+            <option value="responsable">Responsable Maintenance</option>
+            <option value="super_admin">Super Admin</option>
+          </select>
+        </div>
+        <div class="field"><label>Mot de passe initial</label><input name="password" type="password" required /></div>
+      </form>
+      <footer class="modal__footer">
+        <button class="btn btn--ghost" data-close>Annuler</button>
+        <button class="btn btn--primary" id="btn-user-save">Créer</button>
+      </footer>
+    </div>
+  </div>
+
+
+  <!-- ===================================================================== -->
+  <!-- TOAST NOTIFICATIONS                                                    -->
+  <!-- ===================================================================== -->
+  <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ===================================================================== -->
+  <!-- LOADING OVERLAY                                                        -->
+  <!-- ===================================================================== -->
+  <div class="loader" id="loader" hidden>
+    <div class="loader__spinner"></div>
+    <p class="loader__text" id="loader-text">Chargement…</p>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- FIREBASE SDK (compat v9)                                               -->
+  <!-- ===================================================================== -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION                                                            -->
+  <!-- ===================================================================== -->
+  <script src="app.js"></script>
+
+</body>
+</html>
